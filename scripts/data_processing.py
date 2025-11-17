@@ -7,6 +7,28 @@ from sklearn.feature_extraction.text import TfidfVectorizer # Converts text to n
 from sklearn.impute import SimpleImputer # Fills in missing values
 from sklearn.preprocessing import OneHotEncoder # Converts categories to numbers
 
+# --- New Refactored Function (Fixes D.R.Y. Violation) ---
+
+def clean_and_combine_text(df):
+    """
+    Cleans and combines the text columns into a single 'combined_text' column.
+    This is a reusable utility function for our "Saarland-Standard" workflow.
+    """
+    print("Running text cleaning and combining...")
+
+    # We must fill NaNs *before* combining
+    text_cols_to_combine = ['title', 'description', 'requirements']
+    df[text_cols_to_combine] = df[text_cols_to_combine].fillna('')
+
+    # Create the *single* text column that our pipeline expects
+    # We use .apply() to join the text from each row
+    df['combined_text'] = df[text_cols_to_combine].apply(lambda x: ' '.join(x), axis=1)
+
+    # Return the *modified* DataFrame
+    return df
+
+# --- End of New Function ---
+
 #making preprocessing logic importable and reusable
 def create_preprocessor():
     #Partner A
@@ -61,29 +83,22 @@ def create_preprocessor():
 #Test Block
 if __name__ == "__main__":
     # Load data from the relative path
-    df = pd.read_csv('data/fake_job_postings.csv')
-
+    df = pd.read_csv('../data/fake_job_postings.csv')
     # Predicts y using the data in X
     # Define features (X) by dropping the target column
     X = df.drop('fraudulent', axis=1)
     # Define the target variable (y)
     y = df['fraudulent']
 
-        # --- MANUAL TEXT CLEANING (THE FIX) ---
-    # We must fill NaNs *before* the pipeline
-    # to avoid the "Wrong Mail" error.
-    # --- MANUAL TEXT CLEANING & COMBINING (THE FIX) ---
-    # We must fill NaNs *before* combining
-    text_cols_to_combine = ['title', 'description', 'requirements']
-    df[text_cols_to_combine] = df[text_cols_to_combine].fillna('')
-
-    # --- NEW COMBINE STEP (Task 2.2.3 Fix) ---
-    # Create the *single* text column that our pipeline expects
-    # We use .apply() to join the text from each row
-    df['combined_text'] = df[text_cols_to_combine].apply(lambda x: ' '.join(x), axis=1)
+        # --- NEW: Call our refactored function ---
+    df = clean_and_combine_text(df)
     # ---
 
-    # Now, define X and y
+    # Now, *re-define* X so it includes the new column
+    X = df.drop('fraudulent', axis=1)
+
+    # Split data: 80% train, 20% test
+    # ... (rest of the file) ...
     X = df.drop('fraudulent', axis=1)
     y = df['fraudulent']
     # ---
