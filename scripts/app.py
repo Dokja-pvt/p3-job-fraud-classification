@@ -7,7 +7,7 @@ import numpy as np      # For math operations (like getting probability)
 from data_processing import clean_and_combine_text 
 
 # CRITICAL MODEL PATH: Define the relative path to the saved pipeline.
-MODEL_PATH = '../results/best_pipeline.pkl'
+MODEL_PATH = 'results/best_pipeline.pkl'
 
 # Function to load the model once and reuse it (Streamlit standard practice)
 @st.cache_resource
