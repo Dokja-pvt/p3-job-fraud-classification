@@ -1,18 +1,17 @@
-import streamlit as st  # Our main tool for building the web application
-import pandas as pd     # For creating the single-row DataFrame from user input
-import joblib           # To load our saved model file (.pkl)
-import numpy as np      # For math operations (like getting probability)
+import streamlit as st  # tool for building the web application
+import pandas as pd     # creating the single-row DataFrame from user input
+import joblib           # load saved model file 
+import numpy as np      # For math operations
 
-# CRITICAL TOOL REUSE: We must use the exact same cleaning function used during training.
 from data_processing import clean_and_combine_text 
 
-# CRITICAL MODEL PATH: Define the relative path to the saved pipeline.
+# relative path to the saved pipeline.
 MODEL_PATH = 'results/best_pipeline.pkl'
 
-# Function to load the model once and reuse it (Streamlit standard practice)
+# Function to load and reuse the model
 @st.cache_resource
 def load_pipeline():
-    # A. Load the Engine: Loads the trained pipeline from the disk.
+    # Load the Engine (the trained pipeline).
     try:
         pipeline = joblib.load(MODEL_PATH)
         return pipeline
@@ -20,14 +19,14 @@ def load_pipeline():
         st.error(f"Error: Model file not found at {MODEL_PATH}. Ensure p3a3 was completed correctly.")
         return None
 
-# The main function that runs the web application
+# function that runs the web application
 def main():
-    # --- A. Load the Engine ---
+    # Load the Engine
     pipeline = load_pipeline()
     if pipeline is None:
         return
 
-    # --- 3. UI Requirements (st.title and input fields) ---
+    # UI Requirements
     st.title("🛡 Fraudulent Job Posting Detector")
     st.markdown("### The Captain's Bridge: Analyze a Job Posting")
 
@@ -42,8 +41,8 @@ def main():
              st.warning("Please enter some text in at least one field to analyze.")
              return
 
-        # --- B. Processing Logic ---
-        # 1. Create a single-row DataFrame from user input
+        # Processing Logic
+        # Create a single-row DataFrame from user input
         input_data = pd.DataFrame({
             'title': [title],
             'description': [description],
@@ -66,17 +65,17 @@ def main():
             'function': ['Engineering']
         })
 
-        # 2. Pass the DataFrame through the clean_and_combine_text utility
+        # Pass the DataFrame through the clean_and_combine_text utility
         input_data_cleaned = clean_and_combine_text(input_data)
         
-        # --- C. Making the Prediction ---
+        # Making the Prediction
         prediction = pipeline.predict(input_data_cleaned)[0]
         
-        # Confidence (Bonus): Get the probability score
+        # Get the probability score
         proba = pipeline.predict_proba(input_data_cleaned)
         confidence = proba[0][prediction] * 100
         
-        # --- Output Display ---
+        # Output Display
         if prediction == 0:
             st.success("✅ Prediction: REAL JOB POSTING")
             st.write(f"Confidence: **{confidence:.2f}%**")
