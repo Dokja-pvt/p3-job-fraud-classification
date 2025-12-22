@@ -7,46 +7,41 @@ from sklearn.feature_extraction.text import TfidfVectorizer # Converts text to n
 from sklearn.impute import SimpleImputer # Fills in missing values
 from sklearn.preprocessing import OneHotEncoder, FunctionTransformer # Custom function application
 # NLTK and Regex for custom text cleaning
-from nltk.corpus import stopwords 
-from nltk.stem import WordNetLemmatizer 
-import re 
+import nltk
+import re
 
 # --- FUNCTIONS ---
 
 # Function 1: Custom Text Cleaning (The Logic)
 def custom_cleaner_logic(text):
-    """Performs full text cleanup on a single string."""
-    # Check if input is a string
     if not isinstance(text, str):
         return ''
-    
-    # Remove HTML tags
+
     text = re.sub('<[^>]*>', '', text)
-    # Remove special characters and numbers
-    text = re.sub('[^a-zA-Z]', ' ', text) 
-    # Remove single characters
+    text = re.sub('[^a-zA-Z]', ' ', text)
     text = re.sub(r'\b[a-zA-Z]\b', '', text)
-    # Convert text to lowercase
     text = text.lower()
-    
-    # Tokenize and remove stop words
+
     words = text.split()
-    # Note: stopwords must be downloaded via nltk.download('stopwords')
+
+    # --- Stopwords ---
     try:
+        from nltk.corpus import stopwords
         stop_words = set(stopwords.words('english'))
-        words = [w for w in words if not w in stop_words]
-    except LookupError:
-        # Fallback if NLTK data isn't found
+        words = [w for w in words if w not in stop_words]
+    except Exception:
         pass
-    
-    # Lemmatization
+
+    # --- Lemmatization ---
     try:
+        from nltk.stem import WordNetLemmatizer
         lemmatizer = WordNetLemmatizer()
         words = [lemmatizer.lemmatize(w) for w in words]
-    except LookupError:
+    except Exception:
         pass
-    
+
     return ' '.join(words)
+
 
 # Wrapper function to apply cleaner to a list/series
 def text_cleaning_wrapper(data):
